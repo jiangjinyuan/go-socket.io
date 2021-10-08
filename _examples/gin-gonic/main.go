@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -16,7 +18,14 @@ func main() {
 
 	server.OnConnect("/", func(s socketio.Conn) error {
 		s.SetContext("")
-		log.Println("connected:", s.ID())
+		log.Printf("ID %s connected, current connected count: %d", s.ID(), server.Count())
+		i := 0
+		for {
+			s.Emit("say", fmt.Sprintf("hello + no.%d", i))
+			time.Sleep(3 * time.Second)
+			i++
+		}
+
 		return nil
 	})
 
@@ -42,7 +51,7 @@ func main() {
 	})
 
 	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
-		log.Println("closed", reason)
+		log.Printf("ID %s closed, reason: %s, current connected count: %d", s.ID(), reason, server.Count())
 	})
 
 	go func() {
